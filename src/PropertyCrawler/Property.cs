@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Linq;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -29,6 +31,17 @@ namespace PropertyCrawler
             return isNotString && (isList || isCollection || isEnumarable);
         }
 
+        private static bool IsIterableGeneric(this PropertyInfo propertyInfo)
+        {
+            Type type = propertyInfo.GetType();
+            return
+                type.IsGenericType && (
+                    type.GetGenericTypeDefinition() == typeof(List<>) ||
+                    type.GetGenericTypeDefinition() == typeof(Collection<>) ||
+                    type.GetGenericTypeDefinition() == typeof(Enumerable)
+                );
+        }
+
         public static void Crawler(object @object)
         {
             GoingDeeper(@object.GetType().GetProperties());
@@ -49,66 +62,19 @@ namespace PropertyCrawler
                 if(isIterable)
                 {
                     Type type = props[i].PropertyType;
-                    bool isGeneric = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
-
+                    bool isGeneric = type.IsGenericType && (
+                        type.GetGenericTypeDefinition() == typeof(List<>) ||
+                        type.GetGenericTypeDefinition() == typeof(Collection<>)
+                    );
                     int totalGenerics = props[i].PropertyType.GetGenericArguments().Length;
-                    for (int j = 0; j < totalGenerics; j++)
-                    {
-                        // Type type = props[i].PropertyType.GetGenericArguments()[j];
-                        // Deep(type.GetProperties());
-                        // Type _prop = type.GetGenericArguments()[0];
-                        // PropertyInfo[] x = _prop.GetType().GetProperties();
-                    }
+                    // Console.WriteLine($"IsGeneric: {isGeneric} {totalGenerics}");
+                    // Console.WriteLine($"Total Generic: {totalGenerics}");
+
+                    // Type itemType = type.GetGenericArguments()[0];
+                    Type _type = props[i].PropertyType.GetGenericArguments()[0];
+                    GoingDeeper(_type.GetProperties());
                 }
             }
-        }
-
-        public static void _Crawler(object @object)
-        {
-            PropertyInfo[] props = @object.GetType().GetProperties();
-
-            foreach(var prop in props)
-            {
-                bool isPrimitive = prop.PropertyType.IsPrimitive;
-                bool isCollection =
-                    prop.PropertyType != typeof(string) &&
-                    typeof(ICollection).IsAssignableFrom(prop.PropertyType);
-
-                var _type = isPrimitive ? "p" : "c";
-
-                Console.WriteLine($"|-{prop.Name}:{_type}");
-
-                if(isCollection)
-                {
-                    Type type = prop.PropertyType;
-                    bool isGeneric = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
-
-                    if(isGeneric)
-                    {
-                        int totalGenerics = type.GetGenericArguments().Length;
-                        for (int i = 0; i < totalGenerics; i++)
-                        {
-                            Type _prop = type.GetGenericArguments()[0];
-                            PropertyInfo[] x = _prop.GetType().GetProperties();
-
-
-                            // Crawler(_prop);
-                            // Console.WriteLine($"|--{x.}");
-                        }
-
-                        // foreach (var _prop in type.GetGenericArguments())
-                        // {
-                        //     Crawler(_prop);
-                        // }
-
-                        // var itemType = type.GetGenericArguments()[0];
-                        // var x = itemType.GetType().GetProperties();
-                    }
-
-                    // var _props = type.GetType().GetProperties();
-                }
-            }
-
         }
     }
 }
