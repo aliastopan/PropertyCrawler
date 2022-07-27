@@ -55,9 +55,18 @@ namespace PropertyCrawler
             {
                 bool isIterable = props[i].IsIterable();
                 bool isPrimitive = props[i].PropertyType.IsPrimitive;
-                var label = isPrimitive ? "primitive" : "class";
+                string labelType = props[i].PropertyType.Name;
+                string label = "";
+                label = isPrimitive ? "primitive" : "class";
+                if(props[i].PropertyType == typeof(String))
+                    label = "string";
 
-                Console.WriteLine($"{Line}{props[i].Name.ToUpper()}:{label}");
+                if(!isPrimitive && props[i].PropertyType != typeof(String))
+                {
+                    Console.WriteLine($"---");
+                }
+
+                Console.WriteLine($"{Line}{props[i].Name}:{labelType}");
 
                 if(isIterable)
                 {
@@ -67,10 +76,6 @@ namespace PropertyCrawler
                         type.GetGenericTypeDefinition() == typeof(Collection<>)
                     );
                     int totalGenerics = props[i].PropertyType.GetGenericArguments().Length;
-                    // Console.WriteLine($"IsGeneric: {isGeneric} {totalGenerics}");
-                    // Console.WriteLine($"Total Generic: {totalGenerics}");
-
-                    // Type itemType = type.GetGenericArguments()[0];
                     Type _type = props[i].PropertyType.GetGenericArguments()[0];
                     GoingDeeper(_type.GetProperties());
                 }
