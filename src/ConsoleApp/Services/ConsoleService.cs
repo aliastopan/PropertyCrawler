@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Models;
+using PropertyCrawler;
 
 namespace ConsoleApp.Services;
 
@@ -17,5 +19,10 @@ public class ConsoleService : IConsoleService
     public void Run()
     {
         _logger.LogInformation("Starting...");
+
+        var bookshelf = new BookShelf(id: 5);
+
+        Property.Crawler(bookshelf);
+
     }
 }
